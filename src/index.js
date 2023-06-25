@@ -104,7 +104,7 @@ function setGameOver(gameOver, player) {
   $btnRestart.toggleAttribute("disabled", false)
 }
 
-function testForVictory(checkedCells, cell, player, score, relation) {
+/*function testForVictory(checkedCells, cell, player, score, relation) {
   let x = cell.x
   let y = cell.y
 
@@ -143,6 +143,60 @@ function testForVictory(checkedCells, cell, player, score, relation) {
 
     testForVictory(checkedCells, nearbyCell, player, score, el.relation)
   })
+}*/
+
+function testForVictory(cellsToCheck, player, score) {
+  const newCellsToCheck = []
+
+  if (cellsToCheck.length === 0) {
+    return
+  }
+
+  for (const { x, y, step, relation } of cellsToCheck) {
+    const cell = getCellByCoordinates(x, y)
+
+    // debugger
+
+    if (cell !== undefined && cell.val === player.val) {
+      score[relation]++
+
+      if (score[relation] >= SCORE_FOR_VICTORY) {
+        return
+      }
+
+      if (relation === "h") {
+        newCellsToCheck.push({
+          x: x + step,
+          y,
+          step,
+          relation
+        })
+      } else if (relation === "v") {
+        newCellsToCheck.push({
+          x,
+          y: y + step,
+          step,
+          relation
+        })
+      } else if (relation === "ld") {
+        newCellsToCheck.push({
+          x: x + step,
+          y: y + step,
+          step,
+          relation
+        })
+      } else if (relation === "rd") {
+        newCellsToCheck.push({
+          x: x + step,
+          y: y - step,
+          step,
+          relation
+        })
+      }
+    }
+  }
+
+  testForVictory(newCellsToCheck, player, score)
 }
 
 let gameOver = false
@@ -164,14 +218,26 @@ $board.onclick = (e) => {
   setCellValue(cell, player)
 
   const score = { h: 1, v: 1, rd: 1, ld: 1 }
+  const { x, y } = cell
 
-  testForVictory([cell.id], cell, player, score)
+  const cellsToCheck = [
+    { x: x - 1, y: y, step: -1, relation: "h" },
+    { x: x + 1, y: y, step: +1, relation: "h" },
+    { x: x, y: y - 1, step: -1, relation: "v" },
+    { x: x, y: y + 1, step: +1, relation: "v" },
+    { x: x - 1, y: y - 1, step: -1, relation: "ld" },
+    { x: x + 1, y: y + 1, step: +1, relation: "ld" },
+    { x: x - 1, y: y + 1, step: -1, relation: "rd" },
+    { x: x + 1, y: y - 1, step: +1, relation: "rd" }
+  ]
+
+  testForVictory(cellsToCheck, player, score)
 
   if (
-    score.h === SCORE_FOR_VICTORY ||
-    score.v === SCORE_FOR_VICTORY ||
-    score.rd === SCORE_FOR_VICTORY ||
-    score.ld === SCORE_FOR_VICTORY
+    score.h >= SCORE_FOR_VICTORY ||
+    score.v >= SCORE_FOR_VICTORY ||
+    score.rd >= SCORE_FOR_VICTORY ||
+    score.ld >= SCORE_FOR_VICTORY
   ) {
     gameOver = true
     playerWon = player
