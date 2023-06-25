@@ -104,45 +104,59 @@ function setGameOver(gameOver, player) {
   $btnRestart.toggleAttribute("disabled", false)
 }
 
-function testForVictory(checkedCells, cell, player, score, relation) {
-  let x = cell.x
-  let y = cell.y
+function testForVictory(cellsToCheck, player, score) {
+  const newCellsToCheck = []
 
-  ;[
-    { x: x - 1, y: y, relation: "h" },
-    { x: x + 1, y: y, relation: "h" },
-    { x: x, y: y + 1, relation: "v" },
-    { x: x, y: y - 1, relation: "v" },
-    { x: x + 1, y: y + 1, relation: "ld" },
-    { x: x - 1, y: y - 1, relation: "ld" },
-    { x: x - 1, y: y + 1, relation: "rd" },
-    { x: x + 1, y: y - 1, relation: "rd" }
-  ].forEach((el) => {
-    const nearbyCell = getCellByCoordinates(el.x, el.y)
+  if (cellsToCheck.length === 0) {
+    return
+  }
 
-    if (
-      nearbyCell === undefined ||
-      nearbyCell.val !== player.val ||
-      checkedCells.includes(nearbyCell.id) ||
-      (relation && el.relation !== relation)
-    ) {
-      return
+  for (const { x, y, step, relation } of cellsToCheck) {
+    const cell = getCellByCoordinates(x, y)
+
+    if (cell !== undefined && cell.val === player.val) {
+      score[relation].push(cell)
+
+      if (score[relation].length >= SCORE_FOR_VICTORY) {
+        for (const winCell of score[relation]) {
+          winCell.elem.style.backgroundColor = "green"
+        }
+        return
+      }
+
+      if (relation === "h") {
+        newCellsToCheck.push({
+          x: x + step,
+          y,
+          step,
+          relation
+        })
+      } else if (relation === "v") {
+        newCellsToCheck.push({
+          x,
+          y: y + step,
+          step,
+          relation
+        })
+      } else if (relation === "ld") {
+        newCellsToCheck.push({
+          x: x + step,
+          y: y + step,
+          step,
+          relation
+        })
+      } else if (relation === "rd") {
+        newCellsToCheck.push({
+          x: x + step,
+          y: y - step,
+          step,
+          relation
+        })
+      }
     }
+  }
 
-    score[el.relation] += 1
-    checkedCells.push(cell.id)
-
-    if (
-      score.h === SCORE_FOR_VICTORY ||
-      score.v === SCORE_FOR_VICTORY ||
-      score.rd === SCORE_FOR_VICTORY ||
-      score.ld === SCORE_FOR_VICTORY
-    ) {
-      return
-    }
-
-    testForVictory(checkedCells, nearbyCell, player, score, el.relation)
-  })
+  testForVictory(newCellsToCheck, player, score)
 }
 
 let gameOver = false
@@ -163,15 +177,27 @@ $board.onclick = (e) => {
   const player = getPlayer(playerMove)
   setCellValue(cell, player)
 
-  const score = { h: 1, v: 1, rd: 1, ld: 1 }
+  const score = { h: [cell], v: [cell], rd: [cell], ld: [cell] }
+  const { x, y } = cell
 
-  testForVictory([cell.id], cell, player, score)
+  const cellsToCheck = [
+    { x: x - 1, y: y, step: -1, relation: "h" },
+    { x: x + 1, y: y, step: +1, relation: "h" },
+    { x: x, y: y - 1, step: -1, relation: "v" },
+    { x: x, y: y + 1, step: +1, relation: "v" },
+    { x: x - 1, y: y - 1, step: -1, relation: "ld" },
+    { x: x + 1, y: y + 1, step: +1, relation: "ld" },
+    { x: x - 1, y: y + 1, step: -1, relation: "rd" },
+    { x: x + 1, y: y - 1, step: +1, relation: "rd" }
+  ]
+
+  testForVictory(cellsToCheck, player, score)
 
   if (
-    score.h === SCORE_FOR_VICTORY ||
-    score.v === SCORE_FOR_VICTORY ||
-    score.rd === SCORE_FOR_VICTORY ||
-    score.ld === SCORE_FOR_VICTORY
+    score.h.length >= SCORE_FOR_VICTORY ||
+    score.v.length >= SCORE_FOR_VICTORY ||
+    score.rd.length >= SCORE_FOR_VICTORY ||
+    score.ld.length >= SCORE_FOR_VICTORY
   ) {
     gameOver = true
     playerWon = player
