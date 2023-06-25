@@ -2,14 +2,21 @@
   "name": "tic-tac-toe",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "private": true,
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "vite serve --open",
+    "dev": "vite serve",
+    "build": "vite build",
+    "preview": "vite preview",
+    "predeploy": "npm run build",
+    "deploy": "gh-pages -d dist"
   },
   "keywords": [],
   "author": "Object_417",
   "license": "ISC",
-  "dependencies": {
-    "prettier": "^2.8.0"
+  "devDependencies": {
+    "gh-pages": "^5.0.0",
+    "prettier": "^2.8.8",
+    "vite": "^4.3.9"
   }
 }
