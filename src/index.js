@@ -104,47 +104,6 @@ function setGameOver(gameOver, player) {
   $btnRestart.toggleAttribute("disabled", false)
 }
 
-/*function testForVictory(checkedCells, cell, player, score, relation) {
-  let x = cell.x
-  let y = cell.y
-
-  ;[
-    { x: x - 1, y: y, relation: "h" },
-    { x: x + 1, y: y, relation: "h" },
-    { x: x, y: y + 1, relation: "v" },
-    { x: x, y: y - 1, relation: "v" },
-    { x: x + 1, y: y + 1, relation: "ld" },
-    { x: x - 1, y: y - 1, relation: "ld" },
-    { x: x - 1, y: y + 1, relation: "rd" },
-    { x: x + 1, y: y - 1, relation: "rd" }
-  ].forEach((el) => {
-    const nearbyCell = getCellByCoordinates(el.x, el.y)
-
-    if (
-      nearbyCell === undefined ||
-      nearbyCell.val !== player.val ||
-      checkedCells.includes(nearbyCell.id) ||
-      (relation && el.relation !== relation)
-    ) {
-      return
-    }
-
-    score[el.relation] += 1
-    checkedCells.push(cell.id)
-
-    if (
-      score.h === SCORE_FOR_VICTORY ||
-      score.v === SCORE_FOR_VICTORY ||
-      score.rd === SCORE_FOR_VICTORY ||
-      score.ld === SCORE_FOR_VICTORY
-    ) {
-      return
-    }
-
-    testForVictory(checkedCells, nearbyCell, player, score, el.relation)
-  })
-}*/
-
 function testForVictory(cellsToCheck, player, score) {
   const newCellsToCheck = []
 
@@ -155,12 +114,13 @@ function testForVictory(cellsToCheck, player, score) {
   for (const { x, y, step, relation } of cellsToCheck) {
     const cell = getCellByCoordinates(x, y)
 
-    // debugger
-
     if (cell !== undefined && cell.val === player.val) {
-      score[relation]++
+      score[relation].push(cell)
 
-      if (score[relation] >= SCORE_FOR_VICTORY) {
+      if (score[relation].length >= SCORE_FOR_VICTORY) {
+        for (const winCell of score[relation]) {
+          winCell.elem.style.backgroundColor = "green"
+        }
         return
       }
 
@@ -217,7 +177,7 @@ $board.onclick = (e) => {
   const player = getPlayer(playerMove)
   setCellValue(cell, player)
 
-  const score = { h: 1, v: 1, rd: 1, ld: 1 }
+  const score = { h: [cell], v: [cell], rd: [cell], ld: [cell] }
   const { x, y } = cell
 
   const cellsToCheck = [
@@ -234,10 +194,10 @@ $board.onclick = (e) => {
   testForVictory(cellsToCheck, player, score)
 
   if (
-    score.h >= SCORE_FOR_VICTORY ||
-    score.v >= SCORE_FOR_VICTORY ||
-    score.rd >= SCORE_FOR_VICTORY ||
-    score.ld >= SCORE_FOR_VICTORY
+    score.h.length >= SCORE_FOR_VICTORY ||
+    score.v.length >= SCORE_FOR_VICTORY ||
+    score.rd.length >= SCORE_FOR_VICTORY ||
+    score.ld.length >= SCORE_FOR_VICTORY
   ) {
     gameOver = true
     playerWon = player
