@@ -124,6 +124,17 @@ function testForVictory(cellsToCheck, player, score) {
         return
       }
 
+      // instead of this I can use relation object {
+      //   name: "h" | "v" | "ld" | "rd",
+      //   xMultiplier: 1,
+      //   yMultiplier: 0,
+      // }
+      // newCellsToCheck.push({
+      //   x: x + step * relation.xMultiplier,
+      //   y: y + step * relation.yMultiplier
+      // })
+      // e.g., for horizontal, relation.yMultiplier is 0;
+      // for right diagonal xMultiplier is 1, yMultiplier is -1
       if (relation === "h") {
         newCellsToCheck.push({
           x: x + step,
