@@ -11,16 +11,10 @@ function CounterControls() {
   return (
     <>
       <Typography>{counter}</Typography>
-      <Button
-        sx={{ mr: 1 }}
-        variant="contained"
-        onClick={() => dispatch(increment(2))}
-      >
+      <Button sx={{ mr: 1 }} onClick={() => dispatch(increment(2))}>
         +2
       </Button>
-      <Button variant="contained" onClick={() => dispatch(decrement())}>
-        -1
-      </Button>
+      <Button onClick={() => dispatch(decrement())}>-1</Button>
     </>
   )
 }
